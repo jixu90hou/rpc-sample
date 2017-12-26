@@ -1,4 +1,4 @@
-package org.weweb.netty;
+package org.weweb.netty.demo;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -11,7 +11,7 @@ import io.netty.handler.codec.string.StringEncoder;
 /**
  * @Author wshen
  */
-public class SampleClient {
+public class SampleDemoClient {
     public static void main(String[] args) {
         int port = 9070;
         String host = "127.0.0.1";

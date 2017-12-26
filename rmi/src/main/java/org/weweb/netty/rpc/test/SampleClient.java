@@ -10,15 +10,25 @@ import org.weweb.netty.rpc.bean.SampleResponse;
 import org.weweb.netty.rpc.codec.RpcDecoder;
 import org.weweb.netty.rpc.codec.RpcEncoder;
 
-public class SimpleClientHandler extends SimpleChannelInboundHandler<SampleResponse> {
+public class SampleClient extends SimpleChannelInboundHandler<SampleResponse> {
+    private String host;
+    private int port;
+
+    public SampleClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
     private SampleResponse sampleResponse;
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, SampleResponse sampleResponse) throws Exception {
-        this.sampleResponse=sampleResponse;
+        this.sampleResponse = sampleResponse;
     }
+
     public SampleResponse send(SampleRequest sampleRequest) throws InterruptedException {
-        int port = 9070;
-        String host = "127.0.0.1";
+        // int port = 9070;
+        // String host = "127.0.0.1";
         EventLoopGroup workerGroup = new NioEventLoopGroup(1);
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(workerGroup).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
@@ -28,7 +38,7 @@ public class SimpleClientHandler extends SimpleChannelInboundHandler<SampleRespo
                 // todo 管道流添加解码器
                 pipeline.addLast(new RpcEncoder(SampleRequest.class));
                 pipeline.addLast(new RpcDecoder(SampleResponse.class));
-                pipeline.addLast(SimpleClientHandler.this);
+                pipeline.addLast(SampleClient.this);
             }
         });
         bootstrap.option(ChannelOption.TCP_NODELAY, true);

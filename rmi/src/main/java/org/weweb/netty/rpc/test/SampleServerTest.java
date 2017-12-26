@@ -10,6 +10,7 @@ import org.weweb.netty.rpc.bean.SampleResponse;
 import org.weweb.netty.rpc.codec.RpcDecoder;
 import org.weweb.netty.rpc.codec.RpcEncoder;
 import org.weweb.netty.rpc.common.ClassUtil;
+import org.weweb.netty.rpc.registry.ServiceRegistry;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -17,38 +18,59 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author wshen
  */
 public class SampleServerTest {
     private static Map<String, Object> map = new HashMap<>();
+    private static ExecutorService executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingDeque<>());
 
     public static void main(String[] args) throws Exception {
         initRpcService();
         response();
     }
-    public static void initRpcService() throws IllegalAccessException, InstantiationException {
-        String packagePath="org.weweb.netty.rpc.service";
-        Set<Class<?>> classes= ClassUtil.getClasses(packagePath);
-        String rpcServicePath="org.weweb.netty.rpc.annoation.RpcService";
-        for (Class clazz:classes){
-            Annotation[] annotations=clazz.getAnnotations();
-            for (Annotation annotation:annotations){
-                if(rpcServicePath.equals(annotation.annotationType().getName())){
+
+    public static void initRpcService() throws Exception {
+        String packagePath = "org.weweb.netty.rpc.service";
+        Set<Class<?>> classes = ClassUtil.getClasses(packagePath);
+        String rpcServicePath = "org.weweb.netty.rpc.annoation.RpcService";
+        for (Class clazz : classes) {
+            Annotation[] annotations = clazz.getAnnotations();
+            for (Annotation annotation : annotations) {
+                if (rpcServicePath.equals(annotation.annotationType().getName())) {
                     // 指定接口获取内容
-                    Class[] interfaces=clazz.getInterfaces();
+                    Class[] interfaces = clazz.getInterfaces();
                     String className;
-                    if(interfaces.length>0){
-                        className= interfaces[0].getName();
-                    }else{
-                        className=clazz.getName();
+                    if (interfaces.length > 0) {
+                        className = interfaces[0].getName();
+                    } else {
+                        className = clazz.getName();
                     }
                     map.put(className, clazz.newInstance());
                 }
             }
         }
+        ServiceRegistry serviceRegistry = new ServiceRegistry();
+        String requstUrl = "127.0.0.1:9070";
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            String serviceName = entry.getKey();
+            executorService.execute(() -> {
+                try {
+                    serviceRegistry.registry(serviceName, requstUrl);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+        }
     }
+
     public static void response() throws Exception {
         int port = 9070;
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);

@@ -1,6 +1,6 @@
 package org.weweb.netty.rpc.common;
 
-import org.weweb.netty.SampleService;
+import org.weweb.netty.demo.SampleService;
 
 import java.io.File;
 import java.io.FileFilter;

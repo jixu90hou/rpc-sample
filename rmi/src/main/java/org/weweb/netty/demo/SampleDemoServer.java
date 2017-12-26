@@ -1,4 +1,4 @@
-package org.weweb.netty;
+package org.weweb.netty.demo;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -14,7 +14,7 @@ import java.net.InetAddress;
 /**
  * @Author wshen
  */
-public class SampleServer {
+public class SampleDemoServer {
     public static void main(String[] args) {
         int port = 9070;
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
