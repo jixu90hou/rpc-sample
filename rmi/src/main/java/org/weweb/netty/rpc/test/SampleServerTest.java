@@ -9,11 +9,14 @@ import org.weweb.netty.rpc.bean.SampleRequest;
 import org.weweb.netty.rpc.bean.SampleResponse;
 import org.weweb.netty.rpc.codec.RpcDecoder;
 import org.weweb.netty.rpc.codec.RpcEncoder;
+import org.weweb.netty.rpc.common.ClassUtil;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @Author wshen
@@ -22,14 +25,30 @@ public class SampleServerTest {
     private static Map<String, Object> map = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
-        String className = "org.weweb.netty.rpc.service.SampleServiceImpl";
-        Class aClass = Class.forName(className);
-        // 指定接口
-        String interfaceName = aClass.getInterfaces()[0].getName();
-        map.put(interfaceName, aClass.newInstance());
+        initRpcService();
         response();
     }
-
+    public static void initRpcService() throws IllegalAccessException, InstantiationException {
+        String packagePath="org.weweb.netty.rpc.service";
+        Set<Class<?>> classes= ClassUtil.getClasses(packagePath);
+        String rpcServicePath="org.weweb.netty.rpc.annoation.RpcService";
+        for (Class clazz:classes){
+            Annotation[] annotations=clazz.getAnnotations();
+            for (Annotation annotation:annotations){
+                if(rpcServicePath.equals(annotation.annotationType().getName())){
+                    // 指定接口获取内容
+                    Class[] interfaces=clazz.getInterfaces();
+                    String className;
+                    if(interfaces.length>0){
+                        className= interfaces[0].getName();
+                    }else{
+                        className=clazz.getName();
+                    }
+                    map.put(className, clazz.newInstance());
+                }
+            }
+        }
+    }
     public static void response() throws Exception {
         int port = 9070;
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);

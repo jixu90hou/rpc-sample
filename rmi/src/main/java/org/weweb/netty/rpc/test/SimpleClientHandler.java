@@ -1,4 +1,4 @@
-package org.weweb.netty.rpc.service;
+package org.weweb.netty.rpc.test;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;

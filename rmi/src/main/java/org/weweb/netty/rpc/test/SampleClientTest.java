@@ -3,7 +3,7 @@ package org.weweb.netty.rpc.test;
 import org.weweb.netty.rpc.bean.SampleRequest;
 import org.weweb.netty.rpc.bean.SampleResponse;
 import org.weweb.netty.rpc.service.SampleService;
-import org.weweb.netty.rpc.service.SimpleClientHandler;
+import org.weweb.netty.rpc.service.TestService;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -16,8 +16,13 @@ public class SampleClientTest {
 		int result = sampleService.add(12222, 100);
 		System.out.println("result:" + result);
 
-		String result2=sampleService.say("zhangmingming");
+		String result2=sampleService.say("zhangmin44444gming");
 		System.out.println("result:"+result2);
+
+
+		TestService testService=createProxy(TestService.class);
+		String responseResult=testService.print("zhang");
+		System.out.println("responseResult:"+responseResult);
 		System.exit(0);
 
 	}
@@ -41,7 +46,5 @@ public class SampleClientTest {
 					}
 				});
 	}
-
-
 
 }

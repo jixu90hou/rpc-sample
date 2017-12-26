@@ -1,5 +1,8 @@
 package org.weweb.netty.rpc.service;
 
+import org.weweb.netty.rpc.annoation.RpcService;
+
+@RpcService
 public class SampleServiceImpl implements SampleService {
 	@Override
 	public int add(int a, int b) {
