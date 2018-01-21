@@ -1,6 +1,5 @@
 package org.weweb.rest;
 
-import com.alibaba.fastjson.JSON;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -40,22 +39,24 @@ public class RestfulServer {
                             ByteBuf byteBuf = httpContent.content();
                             byte[] bytes = new byte[byteBuf.readableBytes()];
                             byteBuf.readBytes(bytes);
+                            String requestMsg=new String(bytes);
                             logger.info("receive the content:" + new String(bytes)+"\t"+Thread.currentThread().getName()+"\t"+count.addAndGet(1));
+                            response(ctx,requestMsg);
                         }
                     }
 
-                    @Override
-                    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+                    public void response(ChannelHandlerContext ctx,String requestMsg) throws Exception {
                         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
                         HttpHeaders httpHeaders = response.headers();
                         Result result = new Result(200, "operate success", "hello restful");
-                        String responseValue = JSON.toJSONString(result);
+                        String responseValue = requestMsg;
                         httpHeaders.set(HttpHeaders.Names.CONTENT_LENGTH, responseValue.length());
                         httpHeaders.set(HttpHeaders.Names.CONTENT_TYPE, "application/json");
                         ByteBuf byteBuf = response.content();
                         byteBuf.writeBytes(responseValue.getBytes());
                         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
                         //super.channelReadComplete(ctx);
+                        //{"id":1,"key":"2"}
                     }
 
                 });

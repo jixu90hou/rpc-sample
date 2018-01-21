@@ -1,15 +1,20 @@
 package org.weweb.rest;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import org.weweb.rest.codec.MsgpackDecoder;
+import org.weweb.rest.codec.MsgpackEncoder;
+import org.weweb.rest.entity.UserInfo;
 
-public class HttpServer {
+/**
+ * @author jackshen
+ */
+public class HttpMsgpackServer {
     public static void main(String[] args) throws InterruptedException {
         ServerBootstrap bootstrap = new ServerBootstrap();
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
@@ -18,25 +23,31 @@ public class HttpServer {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
-                ByteBuf delimiter=Unpooled.copiedBuffer("$_".getBytes());
-               pipeline.addLast(new DelimiterBasedFrameDecoder(1024,delimiter));
-              //  pipeline.addLast(new StringDecoder());
-                pipeline.addLast(new SimpleChannelInboundHandler<ByteBuf>() {
+               // ByteBuf delimiter = Unpooled.copiedBuffer("$_".getBytes());
+                pipeline.addLast(new LengthFieldBasedFrameDecoder(65535,0,2,0,2));
+                pipeline.addLast(new MsgpackDecoder());
+                pipeline.addLast(new LengthFieldPrepender(2));
+                pipeline.addLast(new MsgpackEncoder());
+               // pipeline.addLast(new DelimiterBasedFrameDecoder(1024, delimiter));
+                //  pipeline.addLast(new StringDecoder());
+                pipeline.addLast(new SimpleChannelInboundHandler<UserInfo>() {
                     @Override
-                    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
-                        byte[] bytes=new byte[byteBuf.readableBytes()];
-                        byteBuf.readBytes(bytes);
-                        String msg=new String(bytes,"utf-8");
-                        System.out.println("msg:" + new String(bytes));
-                        ctx.writeAndFlush(Unpooled.copiedBuffer("$_神大名".getBytes()));
+                    protected void channelRead0(ChannelHandlerContext ctx, UserInfo userInfo) throws Exception {
                         //.addListener(ChannelFutureListener.CLOSE);
+                        System.out.println("userInfo:"+userInfo);
+                        ctx.writeAndFlush(userInfo);
                     }
+
                     @Override
                     public void channelActive(ChannelHandlerContext ctx) throws Exception {
                         System.out.println("---active---");
                         super.channelActive(ctx);
                     }
 
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                        cause.printStackTrace();
+                    }
                 });
             }
         });

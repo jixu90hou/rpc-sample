@@ -1,0 +1,9 @@
+1、基本的数据类型(包装类型)
+int(Integer),char(Character),long(Long),short(Short),double(Double),float(Float),byte(Byte),boolean(Boolean)
+2、包名package lean;导入import java.util.ArrayList;
+3、4种修饰符public,default,protect,private
+4、static静态
+
+
+数组：["zhangsan","lisi","wangwu","shenliu"]
+下标：  0,           1,   2,          3
